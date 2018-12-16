@@ -46,10 +46,13 @@ DEBUG=false
 
 # Default Sequence start and step values for Snapshots. E.g. percentage into
 # file where to start and how far from current step to next step (%) up to 100.
-SEQ_START=1
-SEQ_STEP=4
-SEQ_THUMB_SIZE=250
+SEQ_START=0
+SEQ_STEP=5
+SEQ_THUMB_SIZE=500
 SEQ_GETVALS=true
+if [[ $1 == "-q" ]] || [[ $0 =~ q$ ]]; then
+	SEQ_GETVALS=false
+fi
 
 SETTINGS_GLOBAL=false
 
@@ -136,8 +139,6 @@ fi
 #   * Prompt to perform cleanup of the temp dir.
 for FILEPATH in "${FILEPATHS[@]}"; do
 
-  # $zenity  --info --text="[DEBUG] Operating on file\n\"$FILEPATH\""
-
   # Testing file
   FILEINFO=$( $file "$FILEPATH" )
   if $echo $FILEINFO | $grep -qviE 'video|asf|mkv|mpeg|mpg|RealMedia|flv|avi|mp4' > /dev/null 2>&1 ; then
@@ -152,13 +153,12 @@ for FILEPATH in "${FILEPATHS[@]}"; do
   
   SNAP_DIR=$( $echo -n montage_$FILENAME | $tr -c "[:alnum:]" "." )
   
-  #$mkdir $SNAP_DIR >> $LOG_FILE 2>&1   # Causing log to be created above SNAP_DIR.
   $mkdir -p $SNAP_DIR
   
   cd $SNAP_DIR
   
     # Unfortunately forms does not seem to support setting default values
-    # $zenity --forms --title="Set Snap Seq" --text=""    --add-entry="Start %"    --add-entry="Step By"
+    # which results in multiple prompts. 
   if $SEQ_GETVALS; then
     SEQ_START=$( $zenity --entry --text="Start % (0-100)" --entry-text=$SEQ_START )
     SEQ_STEP=$( $zenity --entry --text="Step from start to 100" --entry-text=$SEQ_STEP )
@@ -181,8 +181,9 @@ for FILEPATH in "${FILEPATHS[@]}"; do
     pnum=$( $printf "%03d" $i )
    
     if [ ! -f "${SNAP_DIR}_${pnum}.jpg" ]; then
-      $echo  "../$FILENAME  -o ${SNAP_DIR}_${pnum}.jpg -t${i}% -s${SEQ_THUMB_SIZE}"   >> $LOG_FILE 2>&1
-      $ffmpegthumbnailer -i ../"$FILENAME"  -o ${SNAP_DIR}_${pnum}.jpg -t"${i}%" -s"${SEQ_THUMB_SIZE}"   >> $LOG_FILE 2>&1
+      thumbs_cmd="$ffmpegthumbnailer -f -q10 -i ../\"$FILENAME\"  -o ${SNAP_DIR}_${pnum}.jpg -t\"${i}%\" -s\"${SEQ_THUMB_SIZE}\"   >> $LOG_FILE 2>&1"
+      $echo  "$thumbs_cmd"   >> $LOG_FILE 2>&1
+      eval $thumbs_cmd
       $sleep 0.2
     else
       $echo  "\"${SNAP_DIR}_${pnum}.jpg\" already exists. Skipping..."   >> $LOG_FILE 2>&1
@@ -211,8 +212,8 @@ for FILEPATH in "${FILEPATHS[@]}"; do
   
   # Create a montage sheet from all the snapshots:
   
-  $montage -gravity south -title "$FILENAME" -geometry '1x1+12+12<'  ${SNAP_DIR}_*.jpg   ../"$BASEFILE".jpg  >> $LOG_FILE 2>&1
-  $sleep 1
+  $montage -background Black -pointsize 28 -stroke White -fill Yellow -gravity south -title "${FILENAME%.*}" -geometry '1x1+8+8<'  ${SNAP_DIR}_*.jpg   ../"$BASEFILE".jpg  >> $LOG_FILE 2>&1
+  $sleep 0.4
   
   # Prompt to Cleanup our SNAP_DIR
   # BUG on NAS drive:
@@ -238,15 +239,5 @@ for FILEPATH in "${FILEPATHS[@]}"; do
     cd ..
     $rmdir $SNAP_DIR
   fi
-
-#  DO_PURGE=$( $zenity  --question --text="${SNAPS_ERROR}\nPurge the Snapshots directory \"$SNAP_DIR\"?" )
-#  if [[ $? == 0 ]] ; then
-#    for f in $( $find . -name "*.jpg" );do
-#      $trash $f
-#    done
-#    $trash ./${LOG_FILE}
-#    cd ..
-#    $rmdir $SNAP_DIR
-#  fi
 
 done

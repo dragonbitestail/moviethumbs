@@ -46,9 +46,9 @@ DEBUG=false
 
 # Default Sequence start and step values for Snapshots. E.g. percentage into
 # file where to start and how far from current step to next step (%) up to 100.
-SEQ_START=0
-SEQ_STEP=5
-SEQ_THUMB_SIZE=500
+SEQ_START=1
+SEQ_STEP=7
+SEQ_THUMB_SIZE=480
 SEQ_GETVALS=true
 if [[ $1 == "-q" ]] || [[ $0 =~ q$ ]]; then
 	SEQ_GETVALS=false

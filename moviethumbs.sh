@@ -1,47 +1,17 @@
 #!/bin/bash
 
-# File Manager script -> Montage Movie File
-# Tested environment:
-# * Ubuntu 12.04.5 LTS 
-# * XFCE 4.8  (Window Manager)
-# * 
-# * Deployed as a Thunar file manager "custom action"
-
-# NOTES:
-# Thunar
-#  Removed the file patterns: *.rm;*.avi;*.mov;*.mpg;*.mpeg;*.mp4;*.ogm;*.wmv;*.flv
-#  as they were preventing option from showing up when selecting a directory.
-
-
-# DONE: Modify to support selection of multiple file or starting directory:
+# Movie Montage
 #
-# * Check arg count
-# * If arg count > 1, prompt to whether to apply seq start /step to all files.
-# * After args checks, wrap everything in outer loop for each file.
-#
-# Caveats:
-# * Recursion not supported
-# * Only single directory selection tested
-# * Directories containing mix of video and non-vid files not tested
-
-# DONE: Determine why getting empty "LOG_FILE" in dir. above SNAP_DIR.
-# ANS.: We don't switch to SNAP_DIR until into the inner loop for ea. file
-#       we are dealing with.
-# RESOLUTION: Only write to log in SNAP_DIR. as only SNAP_DIR gets cleaned up.
-
-# TODO: Determine if problems with paths are due to spaces:
-# Possible solution is to use "read" in while loop instead of
-# "for" loop which prevent control of IFS.
-#  http://www.linuxquestions.org/questions/programming-9/bash-cp-and-filename-with-spaces-woes-453181/
-#
-# Don't believe this is happening since I switched to using the trash-cli command.
-# But, don't really remember where in the codes the problem was...
-
-
 # Dependencies:
 # zentity, imagemagick, ffmpegthumbnailer, trash-cli
+#
+# Initial test environment:
+# * Ubuntu 12.04.5 LTS 
+# * XFCE 4.8  (Window Manager)
+# * Thunar 
+# * Deployed as a Thunar file manager "custom action"
+#
 
-# 
 DEBUG=false
 
 # Default Sequence start and step values for Snapshots. E.g. percentage into
@@ -86,8 +56,9 @@ zenity=/usr/bin/zenity
 
 SELECT_FILE_DIR=""
 FILEPATHS=( )
+
 # Select Movie file:
-#if [ "$1" == "" ]; then
+
 if [[ $# -gt 0 ]]; then
   PWD=$( pwd )
 
@@ -98,8 +69,6 @@ if [[ $# -gt 0 ]]; then
       $echo "arg 1 is directory = \"$SELECT_FILE_DIR\""
     fi
   fi
-  #FILEPATH="${PWD}/${1}"
-  #FILEPATH="${1}"
   FILEPATHS=( "$@" )
 fi
 
@@ -167,9 +136,7 @@ for FILEPATH in "${FILEPATHS[@]}"; do
 
   fi
 
-
   if $SETTINGS_GLOBAL; then  # When true, allow it to only happen on first loop iteration.
-    #SETTINGS_GLOBAL=false
     SEQ_GETVALS=false
   fi
   

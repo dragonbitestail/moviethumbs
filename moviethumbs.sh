@@ -109,7 +109,7 @@ for FILEPATH in "${FILEPATHS[@]}"; do
   # Testing file
   FILEINFO=$( $file "$FILEPATH" )
   if $echo $FILEINFO | $cut -d':' -f2 | \
-     $grep -qiE 'video|asf|mkv|mpeg|mpg|RealMedia|flv|avi|mp4' \
+     $grep -qiE 'video|asf|mkv|mpeg|mpg|RealMedia|flv|avi|mp4|webm' \
      > /dev/null 2>&1 ; then
     $DEBUG && $echo "Passed file check with info: $FILEINFO"
   else

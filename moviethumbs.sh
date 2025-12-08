@@ -106,7 +106,13 @@ fi
 #   * Prompt to perform cleanup of the temp dir.
 for FILEPATH in "${FILEPATHS[@]}"; do
 
-  # Testing file
+  if [[ ! -f $FILEPATH ]];then
+    fail_msg="\"$FILEPATH\" not found or no read permissions"
+    $DEBUG && $echo "$fail_msg"
+    $yad --title 'Bad File' --text="$fail_msg" --button="OK:1"
+    continue
+  fi
+
   FILEINFO=$( $file "$FILEPATH" )
   if $echo $FILEINFO | $cut -d':' -f2 | \
      $grep -qiE 'video|asf|mkv|mpeg|mpg|RealMedia|flv|avi|mp4|webm' \
@@ -115,7 +121,6 @@ for FILEPATH in "${FILEPATHS[@]}"; do
   else
     $yad  --info --text="The \"file\" command does not recognize $FILEPATH \
       as a video file.\n\nFile Info: $FILEINFO"
-    #exit 1
     continue
   fi
 
